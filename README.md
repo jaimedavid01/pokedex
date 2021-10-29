@@ -2,7 +2,7 @@ POKEDEX TECHNICAL ASSESSMENT
 
 HOW TO RUN APPLICATION:
 
--Run npm install to install our dependencies.
+-Run npm install to install the dependencies.
 
 -Run npm start to start up our React app at http://localhost:3000.
 
