@@ -1,64 +1,82 @@
 import React, { useEffect, useState } from "react";
 import PokemonCollection from "../Feed/PokemonCollection";
 import Pagination from './Pagination';
-import Search from "./Search";
 
 function PokemonPage() {
+  const [fullData, setFullData] = useState([]);
   const [pokemon, setPokemon] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
-  const [searchTerm, setSearchTerm] = useState("");
+
+
+
+
 
   ////Fetch All Pokemons from API
   useEffect(() => {
 
     const fetchPosts = async () => {
       setLoading(true);
-      const response = await fetch("https://pokeapi.co/api/v2/pokemon?offset=0&limit=150");
-      const items = await response.json()
+      const response = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=${currentPage}&limit=25`);
+      const items = await response.json();
       setLoading(false);
+      console.log(items)
       return items;
-
     }
     
     fetchPosts().then(poke => {
+      setFullData(poke)
       setPokemon(poke.results)
-      console.log(pokemon)
+  
   })}, []);
 
 
- /// Get Current 25 items
- const indexOfLastPost = currentPage * itemsPerPage;
- const indexofFirstPost = indexOfLastPost - itemsPerPage;
- const currentPosts = pokemon.slice(indexofFirstPost, indexOfLastPost)
 
-  ///// Search filter logic
-  const pokemonsToDisplay = currentPosts.filter((poke) =>
-  poke.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   //// Change page
-  const paginate = pageNumber => setCurrentPage(pageNumber);
+  function paginate(pageNumber) {
+    setLoading(true);
+    console.log("pageNumber", pageNumber)
+
+    let offset = 0
+    offset = (pageNumber - 1) * 25;
+
+    fetch(`https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=25`)
+    .then(r => r.json())
+    .then(data => {
+      console.log("data", data)
+      setPokemon(data.results)
+      setCurrentPage(pageNumber)
+    })
+
+    setLoading(false);
+  };
+
+
 
   return (
     <div className="App">
       <h1>Pokedex</h1>
-    
-      <Search
-      searchTerm={searchTerm} 
-      onChangeSearch={setSearchTerm} />
 
       <PokemonCollection 
-      pokemon={pokemonsToDisplay} 
+      pokemon={pokemon} 
       loading={loading} />
       
       
       <Pagination 
       itemsPerPage={itemsPerPage} 
-      totalPosts={pokemon.length} 
-      paginate={paginate} />
-
+      totalPosts={fullData.count} 
+      paginate={paginate} 
+      handleNextbtn={handleNextbtn}
+      handlePrevbtn={handlePrevbtn}
+      currentPage={currentPage}
+      maxPageNumberLimit={maxPageNumberLimit}
+      minPageNumberLimit={minPageNumberLimit}
+      />
+      
     </div>
   );
 }
